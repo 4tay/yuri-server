@@ -15,7 +15,7 @@ import com.sun.jersey.spi.resource.Singleton;
 public class Location {
 
 	@GET
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	public String getLocal(@QueryParam("range") Float range, @QueryParam("lat") Float lat,
 			@QueryParam("lng") Float lng) {
 		DBConnection conn = new DBConnection();
@@ -35,7 +35,7 @@ public class Location {
 	}
 	
 	@POST
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	public String addLocal(@QueryParam("id") int id, @QueryParam("lat") Float lat,
 			@QueryParam("lng") Float lng, @QueryParam("colorCode") int colorCode, @QueryParam("checkin") int checkin,
 			@QueryParam("hash") String hash) {
@@ -63,7 +63,7 @@ public class Location {
 		return conn.addLocation(checkin, lat, lng, hash, colorCode);
 	}
 	@PUT
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	public String updateLocaiton(@QueryParam("oldDotID") int oldDotID, @QueryParam("potentialDotID") int potentialDotID,
 			@QueryParam("lat") Float lat, @QueryParam("lng") Float lng, @QueryParam("hash") String hash,
 	@QueryParam("colorCode") int colorCode) {
