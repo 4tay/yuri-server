@@ -1,5 +1,7 @@
 package yuri;
 
+import java.time.LocalDateTime;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -30,7 +32,7 @@ public class Location {
 			lng = (float) 0.0;
 		}
 		
-		System.out.println("Requesting location! " + lat + ", " + lng + ", " + range);
+		System.out.println(LocalDateTime.now() + ": " + "Requesting location! " + lat + ", " + lng + ", " + range);
 		return conn.getEventsInRange(range, lng, lat);
 	}
 	
@@ -41,7 +43,9 @@ public class Location {
 			@QueryParam("hash") String hash) {
 		
 		if(hash == null || hash.equals("")) {
-			hash = "emptyHash";
+			hash = "#emptyHash";
+		} else if( hash.charAt(0) != '#') {
+			hash = "#" + hash;	
 		}
 		if(colorCode <=0) {
 			colorCode = 0;
@@ -58,15 +62,54 @@ public class Location {
 		
 		DBConnection conn = new DBConnection();
 		
-		System.out.println("Print location info... " + checkin + ", " + lat + ", " + lng + ", " + hash + ", " + colorCode );
+		System.out.println(LocalDateTime.now() + ": " + "Print location info... " + checkin + ", " + lat + ", " + lng + ", " + hash + ", " + colorCode );
 		
 		return conn.addLocation(checkin, lat, lng, hash, colorCode);
 	}
+	
+	/*TODO
+	 * Update the PUT method so that it it does not take in a potentialDotID but instead uses
+	 * the oldDotID as the primary ID of the checkin table. Once this is down, it will return
+	 * either the oldDotID or a new ID derived from the DB. This requires me to return the ID
+	 * when a POST is made. 
+	 */
+//	@PUT
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public String updateLocaiton(@QueryParam("oldDotID") int oldDotID, @QueryParam("potentialDotID") int potentialDotID,
+//			@QueryParam("lat") Float lat, @QueryParam("lng") Float lng, @QueryParam("hash") String hash,
+//	@QueryParam("colorCode") int colorCode) {
+//		if(oldDotID <= 0) {
+//			oldDotID = 0;
+//		}
+//		if(potentialDotID <= 0) {
+//			potentialDotID = 0;
+//		}
+//		if(hash == null || hash.equals("")) {
+//			hash = "#emptyHash";
+//		} else if( hash.charAt(0) != '#') {
+//			hash = "#" + hash;
+//		}
+//		if(colorCode <=0) {
+//			colorCode = 0;
+//		}
+//		if(lat == null) {
+//			lat = (float) 0.0;
+//		}
+//		if(lng == null) {
+//			lng = (float) 0.0;
+//		}
+//		
+//		System.out.println(LocalDateTime.now() + ": " + "Print location info... " + oldDotID + ", " + potentialDotID + ", " + lat + ", " + lng + ", " + hash + ", " + colorCode );
+//		
+//		DBConnection conn = new DBConnection();	
+//		return conn.updateLocation(oldDotID, potentialDotID, lat, lng, hash, colorCode);
+//	}
+//	@Path("/newPut")
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
-	public String updateLocaiton(@QueryParam("oldDotID") int oldDotID, @QueryParam("potentialDotID") int potentialDotID,
+	public String updateNewLocation(@QueryParam("oldDotID") int oldDotID, @QueryParam("potentialDotID") int potentialDotID,
 			@QueryParam("lat") Float lat, @QueryParam("lng") Float lng, @QueryParam("hash") String hash,
-	@QueryParam("colorCode") int colorCode) {
+			@QueryParam("colorCode") int colorCode) {
 		if(oldDotID <= 0) {
 			oldDotID = 0;
 		}
@@ -85,11 +128,11 @@ public class Location {
 		if(lng == null) {
 			lng = (float) 0.0;
 		}
-		
-		System.out.println("Print location info... " + oldDotID + ", " + potentialDotID + ", " + lat + ", " + lng + ", " + hash + ", " + colorCode );
-		
+
+		System.out.println(LocalDateTime.now() + ": " + "Print location info... " + oldDotID + ", " + potentialDotID + ", " + lat + ", " + lng + ", " + hash + ", " + colorCode );
+
 		DBConnection conn = new DBConnection();	
-		return conn.updateLocation(oldDotID, potentialDotID, lat, lng, hash, colorCode);
+		return conn.putLocation(oldDotID, lat, lng, hash, colorCode);
 	}
 	@Path("/search")
 	@GET
