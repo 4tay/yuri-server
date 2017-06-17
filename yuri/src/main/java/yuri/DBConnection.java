@@ -24,8 +24,8 @@ public class DBConnection {
 		System.out.println(LocalDateTime.now() + ": " + "attempt connection");
 		dataSource = new MysqlDataSource();
 		
-		dataSource.setUser("######");
-		dataSource.setPassword("######");
+		dataSource.setUser("#######");
+		dataSource.setPassword("#####");
 		System.out.println(LocalDateTime.now() + ": " + "Baked in UN/PW");
 		
 		dataSource.setServerName("127.0.0.1");
@@ -58,22 +58,9 @@ public class DBConnection {
 			if (rs.first()) {
 				JSONObject fullOb = new JSONObject();
 				JSONArray allCheckins = new JSONArray();
-				try {
-					JSONObject singleLocation = new JSONObject();
-					singleLocation.put("locationID", rs.getInt(1));
-					singleLocation.put("checkinID", rs.getInt(2));
-					singleLocation.put("lat", rs.getFloat(3));
-					singleLocation.put("lng", rs.getFloat(4));
-					singleLocation.put("dtime", rs.getDate(5));
-					singleLocation.put("hash", rs.getString(6));
-					singleLocation.put("colorCode", rs.getInt(7));
-					allCheckins.put(singleLocation);
-				} catch (JSONException e) {
-					System.out.println(LocalDateTime.now() + ": " + e.getMessage());
-				}
 				System.out.println(LocalDateTime.now() + ": " + "moved to first!");
-				while (rs.next()) {
-					try {
+				try {
+					do {
 						JSONObject singleLocation = new JSONObject();
 						singleLocation.put("locationID", rs.getInt(1));
 						singleLocation.put("checkinID", rs.getInt(2));
@@ -83,9 +70,9 @@ public class DBConnection {
 						singleLocation.put("hash", rs.getString(6));
 						singleLocation.put("colorCode", rs.getInt(7));
 						allCheckins.put(singleLocation);
-					} catch (JSONException e) {
-						System.out.println(LocalDateTime.now() + ": " + e.getMessage());
-					}
+					} while(rs.next());
+				} catch (JSONException e) {
+					System.out.println(LocalDateTime.now() + ": " + e.getMessage());
 				}
 				try {
 					fullOb.put("locations", allCheckins);
@@ -104,112 +91,38 @@ public class DBConnection {
 		return "failure....";
 	}
 	
+	
 	public String addLocation(int checkinID, Float lat, Float lng, String hash, int colorCode) {
 		try {
-			System.out.println(LocalDateTime.now() + ": " + "INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('" + checkinID + "','"
+			System.out.println(LocalDateTime.now() + ": " + "INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('101101','"
 					+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");");
-			stmt.execute("INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('" + checkinID + "','"
-					+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");");
-			conn.close();
-			return "Success!";
+			PreparedStatement statement = conn.prepareStatement("INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('101101','"
+					+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");",Statement.RETURN_GENERATED_KEYS);
+			int affectedRows = 120000;
+			affectedRows = statement.executeUpdate();
+			System.out.println(LocalDateTime.now() + ": " + String.valueOf(affectedRows));
+			if (affectedRows == 0) {
+	            throw new SQLException("Creating location failed, no rows affected.");
+	        }
+			try {
+				ResultSet generatedKeys = statement.getGeneratedKeys();
+				if (generatedKeys.next()) {
+					Long rowID = generatedKeys.getLong(1);
+	            	conn.close();
+					return String.valueOf(rowID);
+	            }
+	            else {
+	                throw new SQLException("Creating location failed, no ID obtained.");
+	            }
+	        } catch(SQLException ex) {
+	        	System.out.println(LocalDateTime.now() + ": " + "Error: " + ex.getMessage());
+	        }
 		} catch (SQLException ex) {
 			System.out.println(LocalDateTime.now() + ": " + ex.getMessage());
 		}
 		return "failure...";
 	}
-	
-	public String updateLocation(int oldDotID, int potentialDotID, Float lat, Float lng, String hash, int colorCode) {
-		
-		
-		Float range = (float) .02;
-		Float lngCeiling = lng + range;
-		Float lngFloor = lng - range;
-		Float latCeiling = lat + range;
-		Float latFloor = lat - range;
-		try {
-			System.out.println(LocalDateTime.now() + ": " + "SELECT * FROM checkin where checkinid = " + oldDotID +
-					" and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE);");
-			ResultSet rs = stmt.executeQuery("SELECT * FROM checkin where checkinid = " + oldDotID +
-					" and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE);");
-			
-			if (rs.first()) {
-				JSONArray allCheckins = new JSONArray();
-				try {
-					do {
-						JSONObject singleLocation = new JSONObject();
-						singleLocation.put("locationID", rs.getInt(1));
-						singleLocation.put("checkinID", rs.getInt(2));
-						singleLocation.put("lat", rs.getFloat(3));
-						singleLocation.put("lng", rs.getFloat(4));
-						singleLocation.put("dtime", rs.getDate(5));
-						allCheckins.put(singleLocation);
-					} while(rs.next());
-				} catch (JSONException e) {
-					System.out.println(LocalDateTime.now() + ": " + e.getMessage());
-				}
-				System.out.println(LocalDateTime.now() + ": " + "moved to first!");
-//				while (rs.next()) {
-//					try {
-//						JSONObject singleLocation = new JSONObject();
-//						singleLocation.put("locationID", rs.getInt(1));
-//						singleLocation.put("checkinID", rs.getInt(2));
-//						singleLocation.put("lat", rs.getFloat(3));
-//						singleLocation.put("lng", rs.getFloat(4));
-//						singleLocation.put("dtime", rs.getDate(5));
-//						allCheckins.put(singleLocation);
-//					} catch (JSONException e) {
-//						System.out.println(LocalDateTime.now() + ": " + e.getMessage());
-//					}
-//				}
-				boolean movedDot = false;
-				for(int i = 0; i< allCheckins.length(); i++) {
-					JSONObject singleLocation = allCheckins.optJSONObject(i);
-					Float selectingLat = (float) singleLocation.optDouble("lat");
-					Float selectingLng = (float) singleLocation.optDouble("lng");
-					 if ((selectingLat < latCeiling && selectingLat > latFloor) && (selectingLng < lngCeiling && selectingLng > lngFloor)) {
-						 movedDot = true;
-						 System.out.println(LocalDateTime.now() + ": " + "within time range and inside location bounds");
-						 System.out.println(LocalDateTime.now() + ": " + "update checkin set lat = " + lat + ", lng = " + lng + ", dtime = NOW(), hash = '" 
-						 + hash + "', colorCode = " + colorCode + " where checkinid = " + oldDotID);
-						 stmt.execute("update checkin set lat = " + lat + ", lng = " + lng + ", dtime = NOW(), hash = '" 
-						 + hash + "', colorCode = " + colorCode + " where checkinid = " + oldDotID);
-						 return String.valueOf(oldDotID);
-					 } else {
-						 System.out.println(LocalDateTime.now() + ": " + "within time range, but outside of location bounds for location.");
-					 }		
-				}
-				if (!movedDot) {
-					 System.out.println(LocalDateTime.now() + ": " + "I found a dot within the time bound, but outside the range bound. Adding new, returning potentialDotID: " 
-				 + String.valueOf(potentialDotID));
-					 System.out.println(LocalDateTime.now() + ": " + "INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('" + potentialDotID + "','"
-								+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");");
-						stmt.execute("INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('" + potentialDotID + "','"
-								+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");");
-						conn.close();
-						return String.valueOf(potentialDotID);
-				 }
-			} else {
-				//nothing returned from initial select
-				System.out.println(LocalDateTime.now() + ": " + "didn't get anything within range... inserting location!");
-				
-				System.out.println(LocalDateTime.now() + ": " + "INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('" + potentialDotID + "','"
-						+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");");
-				stmt.execute("INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('" + potentialDotID + "','"
-						+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");");
-				conn.close();
-				return String.valueOf(potentialDotID);
-
-			}
-		} catch (SQLException ex) {
-			System.out.println(LocalDateTime.now() + ": " + "Error: " + ex.getMessage());
-		}
-		System.out.println(LocalDateTime.now() + ": " + "Nothing returned from the initial select, likely a logic error if you ever see this in a log.");
-		
-		return String.valueOf(oldDotID);
-	}
-public String putLocation(int oldDotID, Float lat, Float lng, String hash, int colorCode) {
-		
-		
+	public String putLocation(int oldDotID, Float lat, Float lng, String hash, int colorCode) {
 		Float range = (float) .02;
 		Float lngCeiling = lng + range;
 		Float lngFloor = lng - range;
@@ -237,20 +150,6 @@ public String putLocation(int oldDotID, Float lat, Float lng, String hash, int c
 				} catch (JSONException e) {
 					System.out.println(LocalDateTime.now() + ": " + e.getMessage());
 				}
-				
-//				while (rs.next()) {
-//					try {
-//						JSONObject singleLocation = new JSONObject();
-//						singleLocation.put("locationID", rs.getInt(1));
-//						singleLocation.put("checkinID", rs.getInt(2));
-//						singleLocation.put("lat", rs.getFloat(3));
-//						singleLocation.put("lng", rs.getFloat(4));
-//						singleLocation.put("dtime", rs.getDate(5));
-//						allCheckins.put(singleLocation);
-//					} catch (JSONException e) {
-//						System.out.println(LocalDateTime.now() + ": " + e.getMessage());
-//					}
-//				}
 				boolean movedDot = false;
 				for(int i = 0; i< allCheckins.length(); i++) {
 					JSONObject singleLocation = allCheckins.optJSONObject(i);
@@ -278,7 +177,7 @@ public String putLocation(int oldDotID, Float lat, Float lng, String hash, int c
 					 affectedRows = statement.executeUpdate();
 					 System.out.println(LocalDateTime.now() + ": " + String.valueOf(affectedRows));
 					 if (affectedRows == 0) {
-				            throw new SQLException("Creating user failed, no rows affected.");
+				            throw new SQLException("Creating location failed, no rows affected.");
 				        }
 					 try {
 						 ResultSet generatedKeys = statement.getGeneratedKeys();
@@ -288,7 +187,7 @@ public String putLocation(int oldDotID, Float lat, Float lng, String hash, int c
 								return String.valueOf(rowID);
 				            }
 				            else {
-				                throw new SQLException("Creating user failed, no ID obtained.");
+				                throw new SQLException("Creating location failed, no ID obtained.");
 				            }
 				        } catch(SQLException ex) {
 				        	System.out.println(LocalDateTime.now() + ": " + "Error: " + ex.getMessage());
@@ -306,7 +205,7 @@ public String putLocation(int oldDotID, Float lat, Float lng, String hash, int c
 			 affectedRows = statement.executeUpdate();
 			 System.out.println(LocalDateTime.now() + ": " + String.valueOf(affectedRows));
 			 if (affectedRows == 0) {
-		            throw new SQLException("Creating user failed, no rows affected.");
+		            throw new SQLException("Creating location failed, no rows affected.");
 		        }
 			 try {
 				 ResultSet generatedKeys = statement.getGeneratedKeys();
@@ -316,7 +215,7 @@ public String putLocation(int oldDotID, Float lat, Float lng, String hash, int c
 						return String.valueOf(rowID);
 		            }
 		            else {
-		                throw new SQLException("Creating user failed, no ID obtained.");
+		                throw new SQLException("Creating location failed, no ID obtained.");
 		            }
 		        } catch(SQLException ex) {
 		        	System.out.println(LocalDateTime.now() + ": " + "Error: " + ex.getMessage());
