@@ -24,8 +24,8 @@ public class DBConnection {
 		System.out.println(LocalDateTime.now() + ": " + "attempt connection");
 		dataSource = new MysqlDataSource();
 		
-		dataSource.setUser("#######");
-		dataSource.setPassword("#####");
+		dataSource.setUser("######");
+		dataSource.setPassword("######");
 		System.out.println(LocalDateTime.now() + ": " + "Baked in UN/PW");
 		
 		dataSource.setServerName("127.0.0.1");
@@ -40,22 +40,35 @@ public class DBConnection {
 			System.out.println(LocalDateTime.now() + ": " + "SQL ERROR: " + ex.getMessage());
 		}
 	}
-	/*added something so I could push changes.... Dang it Eclipse*/
 	
-	public String getEventsInRange(Float range, Float lng, Float lat) {
+	
+	public String getEventsInRange(Float range, Float lng, Float lat, String hash) {
 		
 		Float lngCeiling = lng + range;
 		Float lngFloor = lng - range;
 		Float latCeiling = lat + range;
 		Float latFloor = lat - range;
 		try {
-			System.out.println(LocalDateTime.now() + ": " + "SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
+			ResultSet rs = null;
+			if(hash == null || hash.equalsIgnoreCase("")) {
+				System.out.println(LocalDateTime.now() + ": " + "SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
 					+ " or lat between " + latFloor + " and " + lat + ") and (lng between " + lng + " and " + lngCeiling
 					+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE);");
-			ResultSet rs = stmt.executeQuery("SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
+				rs = stmt.executeQuery("SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
 					+ " or lat between " + latFloor + " and " + lat + ") and (lng between " + lng + " and " + lngCeiling
 					+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE);");
-			if (rs.first()) {
+			} else {
+				System.out.println(LocalDateTime.now() + ": " + "SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
+						+ " or lat between " + latFloor + " and " + lat + ") and (lng between " + lng + " and " + lngCeiling
+						+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE) and"
+								+ " hash like '%" + hash + "%';");
+				rs = stmt.executeQuery("SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
+						+ " or lat between " + latFloor + " and " + lat + ") and (lng between " + lng + " and " + lngCeiling
+						+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE) and"
+								+ " hash like '%" + hash + "%';");
+				
+			}
+			if (rs != null && rs.first()) {
 				JSONObject fullOb = new JSONObject();
 				JSONArray allCheckins = new JSONArray();
 				System.out.println(LocalDateTime.now() + ": " + "moved to first!");

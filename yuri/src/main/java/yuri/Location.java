@@ -19,7 +19,7 @@ public class Location {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getLocal(@QueryParam("range") Float range, @QueryParam("lat") Float lat,
-			@QueryParam("lng") Float lng) {
+			@QueryParam("lng") Float lng, @QueryParam("hash") String hash) {
 		DBConnection conn = new DBConnection();
 		
 		if(range == null) {
@@ -31,9 +31,12 @@ public class Location {
 		if(lng == null) {
 			lng = (float) 0.0;
 		}
+		if(hash == null) {
+			hash = "";
+		}
 		
 		System.out.println(LocalDateTime.now() + ": " + "Requesting location! " + lat + ", " + lng + ", " + range);
-		return conn.getEventsInRange(range, lng, lat);
+		return conn.getEventsInRange(range, lng, lat, hash);
 	}
 	
 	@POST
@@ -80,6 +83,8 @@ public class Location {
 		}
 		if(hash == null || hash.equals("")) {
 			hash = "#emptyHash";
+		} else if (!hash.startsWith("#")) {
+			hash = "#" + hash;
 		}
 		if(colorCode <=0) {
 			colorCode = 0;
