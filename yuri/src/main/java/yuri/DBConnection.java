@@ -40,7 +40,7 @@ public class DBConnection {
 			System.out.println(LocalDateTime.now() + ": " + "SQL ERROR: " + ex.getMessage());
 		}
 	}
-	
+	/*added something so I could push changes.... Dang it Eclipse*/
 	
 	public String getEventsInRange(Float range, Float lng, Float lat) {
 		

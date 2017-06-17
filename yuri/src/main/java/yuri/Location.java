@@ -67,12 +67,6 @@ public class Location {
 		return conn.addLocation(checkin, lat, lng, hash, colorCode);
 	}
 	
-	/*TODO -- DONE
-	 * Update the PUT method so that it it does not take in a potentialDotID but instead uses
-	 * the oldDotID as the primary ID of the checkin table. Once this is down, it will return
-	 * either the oldDotID or a new ID derived from the DB. This requires me to return the ID
-	 * when a POST is made. 
-	 */
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	public String updateNewLocation(@QueryParam("oldDotID") int oldDotID, @QueryParam("potentialDotID") int potentialDotID,
