@@ -24,8 +24,8 @@ public class DBConnection {
 		System.out.println(LocalDateTime.now() + ": " + "attempt connection");
 		dataSource = new MysqlDataSource();
 		
-		dataSource.setUser("######");
-		dataSource.setPassword("######");
+		dataSource.setUser("businessFawn");
+		dataSource.setPassword("D#Wg0ng");
 		System.out.println(LocalDateTime.now() + ": " + "Baked in UN/PW");
 		
 		dataSource.setServerName("127.0.0.1");
@@ -172,9 +172,9 @@ public class DBConnection {
 						 movedDot = true;
 						 System.out.println(LocalDateTime.now() + ": " + "within time range and inside location bounds");
 						 System.out.println(LocalDateTime.now() + ": " + "update checkin set lat = " + lat + ", lng = " + lng + ", dtime = NOW(), hash = '" 
-						 + hash + "', colorCode = " + colorCode + " where checkinid = " + oldDotID);
+						 + hash + "', colorCode = " + colorCode + " where checkinid = " + oldDotID + ";");
 						 stmt.execute("update checkin set lat = " + lat + ", lng = " + lng + ", dtime = NOW(), hash = '" 
-						 + hash + "', colorCode = " + colorCode + " where checkinid = " + oldDotID);
+						 + hash + "', colorCode = " + colorCode + " where checkinid = " + oldDotID + ";");
 						 return String.valueOf(oldDotID);
 					 } else {
 						 System.out.println(LocalDateTime.now() + ": " + "within time range, but outside of location bounds for location.");
