@@ -24,8 +24,8 @@ public class DBConnection {
 		System.out.println(LocalDateTime.now() + ": " + "attempt connection");
 		dataSource = new MysqlDataSource();
 		
-		dataSource.setUser("businessFawn");
-		dataSource.setPassword("D#Wg0ng");
+		dataSource.setUser("#####");
+		dataSource.setPassword("######");
 		System.out.println(LocalDateTime.now() + ": " + "Baked in UN/PW");
 		
 		dataSource.setServerName("127.0.0.1");
@@ -53,19 +53,19 @@ public class DBConnection {
 			if(hash == null || hash.equalsIgnoreCase("")) {
 				System.out.println(LocalDateTime.now() + ": " + "SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
 					+ " or lat between " + latFloor + " and " + lat + ") and (lng between " + lng + " and " + lngCeiling
-					+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE);");
+					+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE) order by lat,lng;");
 				rs = stmt.executeQuery("SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
 					+ " or lat between " + latFloor + " and " + lat + ") and (lng between " + lng + " and " + lngCeiling
-					+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE);");
+					+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE) order by lat,lng;");
 			} else {
 				System.out.println(LocalDateTime.now() + ": " + "SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
 						+ " or lat between " + latFloor + " and " + lat + ") and (lng between " + lng + " and " + lngCeiling
 						+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE) and"
-								+ " hash like '%" + hash + "%';");
+								+ " hash like '%" + hash + "%' order by lat,lng;");
 				rs = stmt.executeQuery("SELECT * FROM checkin where (lat between " + lat + " and " + latCeiling
 						+ " or lat between " + latFloor + " and " + lat + ") and (lng between " + lng + " and " + lngCeiling
 						+ " or lng between " + lngFloor + " and " + lng + ") and dtime > DATE_SUB(NOW(), INTERVAL 90 MINUTE) and"
-								+ " hash like '%" + hash + "%';");
+								+ " hash like '%" + hash + "%' order by lat,lng;");
 				
 			}
 			if (rs != null && rs.first()) {
@@ -172,9 +172,9 @@ public class DBConnection {
 						 movedDot = true;
 						 System.out.println(LocalDateTime.now() + ": " + "within time range and inside location bounds");
 						 System.out.println(LocalDateTime.now() + ": " + "update checkin set lat = " + lat + ", lng = " + lng + ", dtime = NOW(), hash = '" 
-						 + hash + "', colorCode = " + colorCode + " where checkinid = " + oldDotID + ";");
+						 + hash + "', colorCode = " + colorCode + " where id = " + oldDotID + ";");
 						 stmt.execute("update checkin set lat = " + lat + ", lng = " + lng + ", dtime = NOW(), hash = '" 
-						 + hash + "', colorCode = " + colorCode + " where checkinid = " + oldDotID + ";");
+						 + hash + "', colorCode = " + colorCode + " where id = " + oldDotID + ";");
 						 return String.valueOf(oldDotID);
 					 } else {
 						 System.out.println(LocalDateTime.now() + ": " + "within time range, but outside of location bounds for location.");
@@ -186,10 +186,10 @@ public class DBConnection {
 								+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");");
 					 PreparedStatement statement = conn.prepareStatement("INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('101101','"
 								+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");",Statement.RETURN_GENERATED_KEYS);
-					 int affectedRows = 120000;
+					 int affectedRows = -1;
 					 affectedRows = statement.executeUpdate();
 					 System.out.println(LocalDateTime.now() + ": " + String.valueOf(affectedRows));
-					 if (affectedRows == 0) {
+					 if (affectedRows <= 0) {
 				            throw new SQLException("Creating location failed, no rows affected.");
 				        }
 					 try {
@@ -214,10 +214,10 @@ public class DBConnection {
 						+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");");
 			 PreparedStatement statement = conn.prepareStatement("INSERT INTO checkin (checkinid,lat,lng,dtime,hash,colorCode) values('101101','"
 						+ lat + "','" + lng + "',NOW(),'" + hash + "'," + colorCode + ");",Statement.RETURN_GENERATED_KEYS);
-			 int affectedRows = 120000;
+			 int affectedRows = -1;
 			 affectedRows = statement.executeUpdate();
 			 System.out.println(LocalDateTime.now() + ": " + String.valueOf(affectedRows));
-			 if (affectedRows == 0) {
+			 if (affectedRows <= 0) {
 		            throw new SQLException("Creating location failed, no rows affected.");
 		        }
 			 try {
